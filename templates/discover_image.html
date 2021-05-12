@@ -15,7 +15,7 @@
 </style>
 
 <div>
-    <img class="stretch-image border" style="width: 40em; height: 40em;" src="../static/users_pictures/{{ picture_name}}">
+    <img class="stretch-image border" style="width: 40em; height: 40em;" src="../static/users_pictures/{{ picture_name }}">
 </div>
 <div style="font-size: 1.5em; margin-left: 1em">
     Автор: <b><a id="user_name" href="/user/{{ user_id }}" class="link-dark">{{ username }}</a></b><br>
@@ -28,5 +28,8 @@
     <br>
     <a class="btn btn-danger" role="button" href="/delete_image/{{ picture_id }}"><i class="bi bi-trash"></i></a>
     {% endif %}
+    <br>
+
+    <iframe src="../commentary/{{ picture_id }}" style="width: 20em; height: 22em"></iframe>
 </div>
 {% endblock %}

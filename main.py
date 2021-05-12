@@ -5,7 +5,7 @@ import os
 from threading import Thread
 import schedule
 import time
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 # импорт файлов и классов
@@ -68,6 +68,35 @@ def discover_image(picture_name):
     return render_template('discover_image.html', username=user.name, task=task.name.capitalize(),
                            picture_name=picture_name, task_difficulty=task.difficulty, user_id=user.id,
                            your_image=your_image, picture_id=picture.id)
+
+
+"""Работа с комментариями"""
+
+
+@app.route('/commentary/<int:picture_id>', methods=['GET', 'POST'])
+def commentary(picture_id):
+    comment_data = [{'text': 'Картинка — супер!!!'},
+                        {'text': 'Я админ, так что...'}] + \
+                       [{'text': 'Спам'}] * 20
+
+    users_data = ['Михаил'] * 23
+    users_data[1] = 'admin'
+
+    if request.method == 'GET':
+        return render_template('commentary_view.html',
+                               comment_data=comment_data,
+                               users_data=users_data,
+                               users_id=[1, 2] + [1] * 21)
+    else:
+        add_comment(current_user.id, request.message)
+        return render_template('commentary_view.html',
+                               comment_data=comment_data,
+                               users_data=users_data,
+                               users_id=[1, 2] + [1] * 21)
+
+
+def add_comment(user_id, message):
+    pass
 
 
 """Авторизация, регистрация и выход из учетной записи"""
@@ -156,7 +185,6 @@ def show_user(user_id):
     images = map(lambda x: x.name, db_sess.query(Picture).filter(Picture.owner_id == user_id).all())
 
     # находим файлы рисунков
-    os.chdir(os.path.dirname(sys.argv[0]) + '/static/users_pictures')
     files = list(filter(lambda x: x in images, os.listdir()))
 
     # узнаем свой это или чужой аккаунт
@@ -198,8 +226,8 @@ def draw_task():
         # создаем сессию с базой данных
         db_sess = db_session.create_session()
         # проверяем, отправлял ли пользователь это задание в прошлом
-        if db_sess.query(Picture).filter(Picture.task_id == task.id).\
-                filter(Picture.owner_id == current_user.id).\
+        if db_sess.query(Picture).filter(Picture.task_id == task.id). \
+                filter(Picture.owner_id == current_user.id). \
                 filter(Picture.deleted == 0).first():
             # если да, возвращаем шаблон и сообщаем ему об этом
             return render_template('draw_task.html', form=form, difficulty=difficulty,
